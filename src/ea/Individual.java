@@ -14,9 +14,9 @@ public class Individual {
 		
 	}
 
-	// this code just evolves the transition strategy
+	// this code evolves the transition strategy
 	// an individual is initialised with a random strategy that will evolve
-	// the pacing strategy is initialised to the default strategy and remains fixed
+	// the pacing strategy is initialised with random values between the minimum and max power for cyclists
 	
 	public void initialise(){
 		for(int i = 0; i < transitionStrategy.length; i++){
@@ -24,7 +24,9 @@ public class Individual {
 		}
 		
 		for(int i = 0; i < pacingStrategy.length; i++){
-			pacingStrategy[i] = Parameters.DEFAULT_WOMENS_PACING_STRATEGY[i];
+			int randomNum = Parameters.rnd.nextInt((1200 - 200) + 1) + 200;
+			pacingStrategy[i] = randomNum;
+			//pacingStrategy[i] = Parameters.DEFAULT_WOMENS_PACING_STRATEGY[i];
 		}
 		
 	}
@@ -51,11 +53,9 @@ public class Individual {
 	}
 	
 	// this is a very basic fitness function
-	// if the race is not completed, the chromosome gets fitness 1000
+	// if the race is not completed, the chromosome gets a normalised fitness value
 	// otherwise, the fitness is equal to the time taken
-	// chromosomes that don't complete all get the same fitness (i.e regardless of whether they 
-	// complete 10% or 90% of the race
-	
+
 	public double getFitness(){
 		double fitness = 1000;
 
@@ -72,8 +72,8 @@ public class Individual {
 	}
 
 	public double normalisedFitness(double x) {
-		return ((x - 0.99)
-				/ (0.99 - 0.01))
+		return ((x - 0.999)
+				/ (0.999 - 0.001))
 				* (200 - 300) + 300;
 	}
 	

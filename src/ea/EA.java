@@ -42,13 +42,13 @@ public class EA implements Runnable{
 		initialisePopulation();	
 		System.out.println("finished init pop");
 		iteration = 0;
-		System.out.println(population);
 		while(iteration < Parameters.maxIterations){
 			iteration++;
 			Individual parent1 = tournamentSelection();
 			Individual parent2 = tournamentSelection();
 			Individual child = crossover(parent1, parent2);
-			child = mutate(child);
+			child = mutateTransition(child);
+			child = mutatePacing(child);
 			child.evaluate(teamPursuit);
 			replace(child);
 			printStats();
@@ -62,37 +62,71 @@ public class EA implements Runnable{
 		System.out.println("" + iteration + "\t" + getBest(population) + "\t" + getWorst(population));		
 	}
 
-
+/*	//replace worst
 	private void replace(Individual child) {
 		Individual worst = getWorst(population);
 		if(child.getFitness() < worst.getFitness()){
 			int idx = population.indexOf(worst);
 			population.set(idx, child);
 		}
+	}*/
+
+    //tournament replacement
+	private void replace(Individual child) {
+		ArrayList<Individual> candidates = new ArrayList<Individual>();
+		for(int i = 0; i < Parameters.tournamentSize; i++){
+			candidates.add(population.get(Parameters.rnd.nextInt(population.size())));
+		}
+		Individual loser = getWorst(candidates);
+
+		//replace loser with the child
+		if (loser.getFitness() < child.getFitness()) {
+			int idx = population.indexOf(loser);
+			population.set(idx, child);
+		}
 	}
 
 
-	private Individual mutate(Individual child) {
+	private Individual mutateTransition(Individual child) {
 		if(Parameters.rnd.nextDouble() > Parameters.mutationProbability){
 			return child;
 		}
 		
 		// choose how many elements to alter
 		int mutationRate = 1 + Parameters.rnd.nextInt(Parameters.mutationRateMax);
-		
-		// mutate the transition strategy
 
 			//mutate the transition strategy by flipping boolean value
 			for(int i = 0; i < mutationRate; i++){
 				int index = Parameters.rnd.nextInt(child.transitionStrategy.length);
 				child.transitionStrategy[index] = !child.transitionStrategy[index];
 			}
-			
-		
 		
 		return child;
 	}
 
+	private Individual mutatePacing(Individual child) {
+		if (Parameters.rnd.nextDouble() > Parameters.mutationProbability) {
+			return child;
+		}
+
+		// choose how many elements to alter
+		int mutationRate = 1 + Parameters.rnd.nextInt(Parameters.mutationRateMax);
+
+		//mutate the pacing strategy by changing the int value
+		int x = 0;
+		while (mutationRate < x) {
+			for(int i = 0; i < child.pacingStrategy.length; ++i) {
+				if (Parameters.rnd.nextBoolean()) {
+					child.pacingStrategy[i] += (int) (child.pacingStrategy[i] * Parameters.PacingMutationRate);
+				} else {
+					child.pacingStrategy[i] -= (int) (child.pacingStrategy[i] * -Parameters.PacingMutationRate);
+				}
+				i++;
+			}
+		}
+
+		return child;
+	}
 
 	private Individual crossover(Individual parent1, Individual parent2) {
 		if(Parameters.rnd.nextDouble() > Parameters.crossoverProbability){
@@ -103,8 +137,11 @@ public class EA implements Runnable{
 		int crossoverPoint = Parameters.rnd.nextInt(parent1.transitionStrategy.length);
 		
 		// just copy the pacing strategy from p1 - not evolving in this version
-		for(int i = 0; i < parent1.pacingStrategy.length; i++){			
+		for(int i = 0; i < crossoverPoint; i++){
 			child.pacingStrategy[i] = parent1.pacingStrategy[i];
+		}
+		for(int i = crossoverPoint; i < parent2.pacingStrategy.length; i++){
+			child.pacingStrategy[i] = parent2.pacingStrategy[i];
 		}
 		
 		
