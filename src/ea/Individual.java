@@ -24,9 +24,9 @@ public class Individual {
 		}
 		
 		for(int i = 0; i < pacingStrategy.length; i++){
-			int randomNum = Parameters.rnd.nextInt((1200 - 200) + 1) + 200;
-			pacingStrategy[i] = randomNum;
-			//pacingStrategy[i] = Parameters.DEFAULT_WOMENS_PACING_STRATEGY[i];
+//			int randomNum = Parameters.rnd.nextInt((1200 - 200) + 1) + 200;
+//			pacingStrategy[i] = randomNum;
+			pacingStrategy[i] = Parameters.DEFAULT_WOMENS_PACING_STRATEGY[i];
 		}
 		
 	}
@@ -58,23 +58,23 @@ public class Individual {
 
 	public double getFitness(){
 		double fitness = 1000;
-
 		if (result == null) {
 			return fitness;
 		}
 		if (result.getProportionCompleted() < 0.999) {
 			return normalisedFitness(result.getProportionCompleted());
 		}
-		else{				
-			fitness = result.getFinishTime();
+		else{
+            fitness = result.getFinishTime();
 		}
 		return fitness;
+
 	}
 
 	public double normalisedFitness(double x) {
 		return ((x - 0.999)
 				/ (0.999 - 0.001))
-				* (200 - 300) + 300;
+				* (400 - 500) + 400;
 	}
 	
 	

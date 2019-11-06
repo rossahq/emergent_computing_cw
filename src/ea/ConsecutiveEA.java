@@ -12,11 +12,6 @@ public class ConsecutiveEA {
     private ArrayList<Individual> population = new ArrayList<Individual>();
     private int iteration = 0;
 
-    public SimultaneousEA() {
-
-    }
-
-
     public static void main(String[] args) {
         SimultaneousEA ea = new SimultaneousEA();
         ea.run();
