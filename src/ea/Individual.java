@@ -72,8 +72,8 @@ public class Individual {
 	}
 
 	public double normalisedFitness(double x) {
-		return ((x - 0.999)
-				/ (0.999 - 0.001))
+		return ((x - 0.99)
+				/ (0.99 - 0.01))
 				* (200 - 300) + 300;
 	}
 	
