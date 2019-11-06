@@ -86,7 +86,7 @@ public class Individual {
 		for(int i = 0; i < pacingStrategy.length; i++){
 			individual.pacingStrategy[i] = pacingStrategy[i];
 		}		
-		individual.evaluate(EA.teamPursuit);	
+		individual.evaluate(SimultaneousEA.teamPursuit);
 		return individual;
 	}
 	

@@ -1,11 +1,11 @@
 package ea;
 
 /***
- * This is an example of an EA used to solve the problem
+ * This is an example of an SimultaneousEA used to solve the problem
  *  A chromosome consists of two arrays - the pacing strategy and the transition strategy
  * This algorithm is only provided as an example of how to use the code and is very simple - it ONLY evolves the transition strategy and simply sticks with the default
  * pacing strategy
- * The default settings in the parameters file make the EA work like a hillclimber:
+ * The default settings in the parameters file make the SimultaneousEA work like a hillclimber:
  * 	the population size is set to 1, and there is no crossover, just mutation
  * The pacing strategy array is never altered in this version- mutation and crossover are only
  * applied to the transition strategy array
@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import teamPursuit.TeamPursuit;
 import teamPursuit.WomensTeamPursuit;
 
-public class EA implements Runnable{
+public class SimultaneousEA implements Runnable{
 	
 	// create a new team with the deflault settings
 	public static TeamPursuit teamPursuit = new WomensTeamPursuit(); 
@@ -28,13 +28,13 @@ public class EA implements Runnable{
 	private ArrayList<Individual> population = new ArrayList<Individual>();
 	private int iteration = 0;
 	
-	public EA() {
+	public SimultaneousEA() {
 		
 	}
 
 	
 	public static void main(String[] args) {
-		EA ea = new EA();
+		SimultaneousEA ea = new SimultaneousEA();
 		ea.run();
 	}
 
@@ -55,7 +55,6 @@ public class EA implements Runnable{
 		}						
 		Individual best = getBest(population);
 		best.print();
-
 	}
 
 	private void printStats() {		
