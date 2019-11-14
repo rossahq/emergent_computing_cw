@@ -51,9 +51,6 @@ public class SimultaneousEA implements Runnable {
 			child.evaluate(teamPursuit);
 			replace(child);
 			printStats();
-			if (iteration == 150) {
-				Parameters.mutationProbability = 0.999;
-			}
 		}
 		Individual best = getBest(population);
 		best.print();
@@ -77,7 +74,7 @@ public class SimultaneousEA implements Runnable {
 	//tournament replacement
 	private void replace(Individual child) {
 		ArrayList<Individual> candidates = new ArrayList<Individual>();
-		for (int i = 0; i < Parameters.tournamentSize; i++) {
+		for (int i = 0; i < 20; i++) {
 			candidates.add(population.get(Parameters.rnd.nextInt(population.size())));
 		}
 		Individual loser = getWorst(candidates);

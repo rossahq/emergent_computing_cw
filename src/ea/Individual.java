@@ -25,7 +25,7 @@ public class Individual {
 		}
 		
 		for(int i = 0; i < pacingStrategy.length; i++){
-			int randomNum = Parameters.rnd.nextInt((400 - 0) + 1) + 200;
+			int randomNum = Parameters.rnd.nextInt((700 - 200) + 1) + 200;
 			pacingStrategy[i] = randomNum;
 			//pacingStrategy[i] = Parameters.DEFAULT_WOMENS_PACING_STRATEGY[i];
 		}
