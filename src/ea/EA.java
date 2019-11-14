@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import teamPursuit.TeamPursuit;
 import teamPursuit.WomensTeamPursuit;
 
-public class ConsecutiveEA implements Runnable{
+public class EA implements Runnable{
 
     // create a new team with the default settings
     public static TeamPursuit teamPursuit = new WomensTeamPursuit();
@@ -28,7 +28,7 @@ public class ConsecutiveEA implements Runnable{
     private ArrayList<Individual> population = new ArrayList<Individual>();
     private int iteration = 0;
 
-    public ConsecutiveEA() {
+    public EA() {
 
     }
 
