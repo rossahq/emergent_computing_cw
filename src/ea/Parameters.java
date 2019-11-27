@@ -14,11 +14,11 @@ public class Parameters {
 	public static final int [] DEFAULT_WOMENS_PACING_STRATEGY = {300, 300, 300, 300, 300, 300, 300, 350, 350, 300, 300, 350, 350, 350, 350, 300, 300, 350, 350, 350, 350, 300, 300};
 	
 	
-	public static int popSize = 100;
-	public static int tournamentSize = 10;
+	public static int popSize = 200;
+	public static int tournamentSize = 40;
 	
-	public static int mutationRateMax = 6;//out of len
-	public static double mutationProbability = 0.5;
+	public static int mutationRateMax = 20;//out of len
+	public static double mutationProbability = 0.2;
 	public static double PacingMutationRate = 0.05;
 	public static double crossoverProbability = 1.0;
 	public static double pacingCrossoverProbability = 0.5;

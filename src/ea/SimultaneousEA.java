@@ -62,16 +62,16 @@ public class SimultaneousEA implements Runnable {
 		System.out.println("" + iteration + "\t" + getBest(population) + "\t" + getWorst(population));
 	}
 
-/*	//replace worst
+	//replace worst
 	private void replace(Individual child) {
 		Individual worst = getWorst(population);
 		if(child.getFitness() < worst.getFitness()){
 			int idx = population.indexOf(worst);
 			population.set(idx, child);
 		}
-	}*/
+	}
 
-	//tournament replacement
+/*	//tournament replacement
 	private void replace(Individual child) {
 		ArrayList<Individual> candidates = new ArrayList<Individual>();
 		for (int i = 0; i < 20; i++) {
@@ -82,7 +82,7 @@ public class SimultaneousEA implements Runnable {
 		//replace loser with the child
 		int idx = population.indexOf(loser);
 		population.set(idx, child);
-	}
+	}*/
 
 	private Individual mutate(Individual child) {
 		if (Parameters.rnd.nextDouble() > Parameters.mutationProbability) {
@@ -113,73 +113,16 @@ public class SimultaneousEA implements Runnable {
 		return child;
 	}
 
-
-//	private Individual mutateTransition(Individual child) {
-//		if (Parameters.rnd.nextDouble() > Parameters.mutationProbability) {
-//			return child;
-//		}
-//
-//		// choose how many elements to alter
-//		int mutationRate = 1 + Parameters.rnd.nextInt(Parameters.mutationRateMax);
-//
-//		//mutate the transition strategy by flipping boolean value
-//		for (int i = 0; i < mutationRate; i++) {
-//			int index = Parameters.rnd.nextInt(child.transitionStrategy.length);
-//			child.transitionStrategy[index] = !child.transitionStrategy[index];
-//		}
-//
-//		if (Parameters.rnd.nextDouble() > Parameters.mutationProbability) {
-//			return child;
-//		}
-//		return child;
-//	}
-
-
-//	private Individual mutatePacing(Individual child) {
-//		if (Parameters.rnd.nextDouble() > Parameters.mutationProbability) {
-//			return child;
-//		}
-//
-//		// choose how many elements to alter
-//		int mutationRate = 1 + Parameters.rnd.nextInt(Parameters.mutationRateMax);
-//
-//		//mutate the pacing strategy by changing the int value
-//		int x = 0;
-//		while (mutationRate < x) {
-//			for(int i = 0; i < child.pacingStrategy.length; ++i) {
-//				if (Parameters.rnd.nextBoolean()) {
-//					child.pacingStrategy[i] += (int) (child.pacingStrategy[i] * Parameters.PacingMutationRate);
-//				} else {
-//					child.pacingStrategy[i] -= (int) (child.pacingStrategy[i] * -Parameters.PacingMutationRate);
-//				}
-//				i++;
-//			}
-//		}
-//
-//		return child;
-//	}
-//
 	private Individual crossover(Individual parent1, Individual parent2) {
 //		if(Parameters.rnd.nextDouble() > Parameters.crossoverProbability){
 //			return parent1;
 //		}
+
 		Individual child = new Individual();
 
 		int crossoverPoint = Parameters.rnd.nextInt(parent1.transitionStrategy.length);
 
-		child = uniformCrossover(parent1, parent2, child);
-
-//		for(int i = 0; i < crossoverPoint; i++){
-//			child.transitionStrategy[i] = parent1.transitionStrategy[i];
-//		}
-//		for(int i = crossoverPoint; i < parent2.transitionStrategy.length; i++){
-//			child.transitionStrategy[i] = parent2.transitionStrategy[i];
-//		}
-		return child;
-	}
-
-	private Individual uniformCrossover(Individual parent1, Individual parent2, Individual child) {
-
+		//uniform crossover
 		for (int i = 0; i < child.pacingStrategy.length; i++) {
 			if (Parameters.rnd.nextFloat() > Parameters.pacingCrossoverProbability) {
 				child.pacingStrategy[i] += parent1.pacingStrategy[i];
@@ -188,11 +131,15 @@ public class SimultaneousEA implements Runnable {
 			}
 		}
 
-		child.transitionStrategy = parent1.transitionStrategy;
-
+		// one-point crossover
+		for(int i = 0; i < crossoverPoint; i++){
+			child.transitionStrategy[i] = parent1.transitionStrategy[i];
+		}
+		for(int i = crossoverPoint; i < parent2.transitionStrategy.length; i++){
+			child.transitionStrategy[i] = parent2.transitionStrategy[i];
+		}
 		return child;
 	}
-
 
 	/**
 	 * Returns a COPY of the individual selected using tournament selection
