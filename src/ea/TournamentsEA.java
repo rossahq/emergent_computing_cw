@@ -1,26 +1,26 @@
 package ea;
 
-/***
- * This is an example of an SimultaneousEA used to solve the problem
- *  A chromosome consists of two arrays - the pacing strategy and the transition strategy
- * This algorithm is only provided as an example of how to use the code and is very simple - it ONLY evolves the transition strategy and simply sticks with the default
- * pacing strategy
- * The default settings in the parameters file make the SimultaneousEA work like a hillclimber:
- * 	the population size is set to 1, and there is no crossover, just mutation
- * The pacing strategy array is never altered in this version- mutation and crossover are only
- * applied to the transition strategy array
- * It uses a simple (and not very helpful) fitness function - if a strategy results in an
- * incomplete race, the fitness is set to 1000, regardless of how much of the race is completed
- * If the race is completed, the fitness is equal to the time taken
- * The idea is to minimise the fitness value
+/*
+Implementation:
+
+Tournament size: 10
+Pop: 100
+Tournament Selection & Tournament Replacement
+Uniform & one-point crossover
+Mutation probability: 0.1
+Mutate rate: 0.05
+Iterations: 1000
+
  */
 
 
 import java.util.ArrayList;
+import java.util.Arrays;
+
 import teamPursuit.TeamPursuit;
 import teamPursuit.WomensTeamPursuit;
 
-public class SimultaneousEA implements Runnable {
+public class TournamentsEA implements Runnable {
 
 	// create a new team with the deflault settings
 	public static TeamPursuit teamPursuit = new WomensTeamPursuit();
@@ -28,13 +28,14 @@ public class SimultaneousEA implements Runnable {
 	private ArrayList<Individual> population = new ArrayList<Individual>();
 	private int iteration = 0;
 
-	public SimultaneousEA() {
+	public TournamentsEA() {
 
 	}
 
 
 	public static void main(String[] args) {
-		SimultaneousEA ea = new SimultaneousEA();
+		TournamentsEA ea = new TournamentsEA();
+
 		ea.run();
 	}
 
@@ -46,8 +47,15 @@ public class SimultaneousEA implements Runnable {
 			iteration++;
 			Individual parent1 = tournamentSelection();
 			Individual parent2 = tournamentSelection();
+
+			if (parent1 == parent2) {
+				System.out.println("Same individ as parent");
+			}
+
 			Individual child = crossover(parent1, parent2);
+
 			child = mutate(child);
+
 			child.evaluate(teamPursuit);
 			replace(child);
 			printStats();
@@ -62,19 +70,19 @@ public class SimultaneousEA implements Runnable {
 		System.out.println("" + iteration + "\t" + getBest(population) + "\t" + getWorst(population));
 	}
 
-	//replace worst
+	/*//replace worst
 	private void replace(Individual child) {
 		Individual worst = getWorst(population);
 		if(child.getFitness() < worst.getFitness()){
 			int idx = population.indexOf(worst);
 			population.set(idx, child);
 		}
-	}
+	}*/
 
-/*	//tournament replacement
+	//tournament replacement
 	private void replace(Individual child) {
-		ArrayList<Individual> candidates = new ArrayList<Individual>();
-		for (int i = 0; i < 20; i++) {
+		ArrayList<Individual> candidates = new ArrayList<>();
+		for (int i = 0; i < Parameters.tournamentSize; i++) {
 			candidates.add(population.get(Parameters.rnd.nextInt(population.size())));
 		}
 		Individual loser = getWorst(candidates);
@@ -82,45 +90,42 @@ public class SimultaneousEA implements Runnable {
 		//replace loser with the child
 		int idx = population.indexOf(loser);
 		population.set(idx, child);
-	}*/
+	}
 
 	private Individual mutate(Individual child) {
-		if (Parameters.rnd.nextDouble() > Parameters.mutationProbability) {
-			return child;
-		}
-
-		// choose how many elements to alter
-		int mutationRate = 1 + Parameters.rnd.nextInt(Parameters.mutationRateMax);
 
 		//mutate the transition strategy by flipping boolean value
-		for (int i = 0; i < mutationRate; i++) {
-			int index = Parameters.rnd.nextInt(child.transitionStrategy.length);
-			child.transitionStrategy[index] = !child.transitionStrategy[index];
+		for (int i = 0; i < child.transitionStrategy.length; i++) {
+			if (Parameters.rnd.nextDouble() < Parameters.mutationProbability) {
+				int index = Parameters.rnd.nextInt(child.transitionStrategy.length);
+				child.transitionStrategy[index] = !child.transitionStrategy[index];
+			}
 		}
 
 		//mutate the pacing strategy by changing the int value
-		int x = 0;
-		while (mutationRate > x) {
-			for (int i = 0; i < child.pacingStrategy.length; ++i) {
+		for (int i = 0; i < child.pacingStrategy.length; ++i) {
+			if (Parameters.rnd.nextDouble() < Parameters.mutationProbability) {
+				int mutateAmount = (int) (child.pacingStrategy[i] * Parameters.PacingMutationRate);
 				if (Parameters.rnd.nextBoolean()) {
-					child.pacingStrategy[i] += (int) (child.pacingStrategy[i] * Parameters.PacingMutationRate);
+					child.pacingStrategy[i] += mutateAmount;
+					if (child.pacingStrategy[i] > 1200) {
+						child.pacingStrategy[i] -= mutateAmount;
+					}
 				} else {
-					child.pacingStrategy[i] -= (int) (child.pacingStrategy[i] * -Parameters.PacingMutationRate);
+					child.pacingStrategy[i] -= mutateAmount;
+					if (child.pacingStrategy[i] < 200) {
+						child.pacingStrategy[i] += mutateAmount;
+					}
 				}
 			}
-			x++;
 		}
+
 		return child;
 	}
 
 	private Individual crossover(Individual parent1, Individual parent2) {
-//		if(Parameters.rnd.nextDouble() > Parameters.crossoverProbability){
-//			return parent1;
-//		}
 
 		Individual child = new Individual();
-
-		int crossoverPoint = Parameters.rnd.nextInt(parent1.transitionStrategy.length);
 
 		//uniform crossover
 		for (int i = 0; i < child.pacingStrategy.length; i++) {
@@ -131,7 +136,9 @@ public class SimultaneousEA implements Runnable {
 			}
 		}
 
-		// one-point crossover
+		int crossoverPoint = Parameters.rnd.nextInt(parent1.transitionStrategy.length);
+
+		//one-point crossover
 		for(int i = 0; i < crossoverPoint; i++){
 			child.transitionStrategy[i] = parent1.transitionStrategy[i];
 		}
@@ -177,7 +184,7 @@ public class SimultaneousEA implements Runnable {
 		}
 		return worst;
 	}
-	
+
 	private void printPopulation() {
 		for(Individual individual : population){
 			System.out.println(individual);
@@ -187,10 +194,10 @@ public class SimultaneousEA implements Runnable {
 	private void initialisePopulation() {
 		while(population.size() < Parameters.popSize){
 			Individual individual = new Individual();
-			individual.initialise();			
+			individual.initialise();
 			individual.evaluate(teamPursuit);
 			population.add(individual);
-							
-		}		
-	}	
+
+		}
+	}
 }

@@ -1,65 +1,61 @@
-package ea.diversityEAs;
+package ea;
 
-/***
- * This is an example of an TournamentsEA used to solve the problem
- *  A chromosome consists of two arrays - the pacing strategy and the transition strategy
- * This algorithm is only provided as an example of how to use the code and is very simple - it ONLY evolves the transition strategy and simply sticks with the default
- * pacing strategy
- * The default settings in the parameters file make the TournamentsEA work like a hillclimber:
- * 	the population size is set to 1, and there is no crossover, just mutation
- * The pacing strategy array is never altered in this version- mutation and crossover are only
- * applied to the transition strategy array
- * It uses a simple (and not very helpful) fitness function - if a strategy results in an
- * incomplete race, the fitness is set to 1000, regardless of how much of the race is completed
- * If the race is completed, the fitness is equal to the time taken
- * The idea is to minimise the fitness value
+/*
+Implementation:
+
+Tournament size: 10
+Pop: 100
+Tournament Selection & Tournament Replacement
+one-point crossover for transition and pacing
+Mutation probability: 0.1
+Mutate rate: 0.05
+Iterations: 1000
+
  */
 
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
-import ea.Individual;
-import ea.Parameters;
 import teamPursuit.TeamPursuit;
 import teamPursuit.WomensTeamPursuit;
 
-public class FitnessSharingEA implements Runnable {
+public class TournamentCrossoversEA implements Runnable {
 
-    // create a new team
+    // create a new team with the deflault settings
     public static TeamPursuit teamPursuit = new WomensTeamPursuit();
-
-    int hd_mating_threshold = 10;  // use this to set a mating threshold in the genotypic space
-    double ec_mating_threshold = 0.2; // use this to set a mating thresholdin the phenotypic space
-
 
     private ArrayList<Individual> population = new ArrayList<Individual>();
     private int iteration = 0;
 
-    public FitnessSharingEA() {
+    public TournamentCrossoversEA() {
 
     }
 
 
     public static void main(String[] args) {
-        FitnessSharingEA ea = new FitnessSharingEA();
+        TournamentCrossoversEA ea = new TournamentCrossoversEA();
+
         ea.run();
     }
 
     public void run() {
         initialisePopulation();
-
         System.out.println("finished init pop");
         iteration = 0;
-        long t= System.currentTimeMillis();
-
-        long end = t+ 300000;
-
-        while(System.currentTimeMillis() < end)  {
+        while (iteration < Parameters.maxIterations) {
             iteration++;
             Individual parent1 = tournamentSelection();
             Individual parent2 = tournamentSelection();
+
+            if (parent1 == parent2) {
+                System.out.println("Same individ as parent");
+            }
+
             Individual child = crossover(parent1, parent2);
+
             child = mutate(child);
+
             child.evaluate(teamPursuit);
             replace(child);
             printStats();
@@ -74,9 +70,18 @@ public class FitnessSharingEA implements Runnable {
         System.out.println("" + iteration + "\t" + getBest(population) + "\t" + getWorst(population));
     }
 
+	/*//replace worst
+	private void replace(Individual child) {
+		Individual worst = getWorst(population);
+		if(child.getFitness() < worst.getFitness()){
+			int idx = population.indexOf(worst);
+			population.set(idx, child);
+		}
+	}*/
+
     //tournament replacement
     private void replace(Individual child) {
-        ArrayList<Individual> candidates = new ArrayList<Individual>();
+        ArrayList<Individual> candidates = new ArrayList<>();
         for (int i = 0; i < Parameters.tournamentSize; i++) {
             candidates.add(population.get(Parameters.rnd.nextInt(population.size())));
         }
@@ -88,6 +93,7 @@ public class FitnessSharingEA implements Runnable {
     }
 
     private Individual mutate(Individual child) {
+
         //mutate the transition strategy by flipping boolean value
         for (int i = 0; i < child.transitionStrategy.length; i++) {
             if (Parameters.rnd.nextDouble() < Parameters.mutationProbability) {
@@ -113,10 +119,12 @@ public class FitnessSharingEA implements Runnable {
                 }
             }
         }
+
         return child;
     }
 
     private Individual crossover(Individual parent1, Individual parent2) {
+
         Individual child = new Individual();
 
         //uniform crossover
@@ -149,18 +157,9 @@ public class FitnessSharingEA implements Runnable {
         for(int i = 0; i < Parameters.tournamentSize; i++){
             candidates.add(population.get(Parameters.rnd.nextInt(population.size())));
         }
-
-        Individual bestParent = candidates.get(0);
-
-        for (int i=0;i<Parameters.tournamentSize;i++){
-            double fitness = calculateSharedFitness(candidates.get(i));
-            if (fitness > calculateSharedFitness(bestParent)){
-                bestParent = candidates.get(i);
-            }
-        }
-
-        return bestParent.copy();
+        return getBest(candidates).copy();
     }
+
 
     private Individual getBest(ArrayList<Individual> aPopulation) {
         double bestFitness = Double.MAX_VALUE;
@@ -192,22 +191,6 @@ public class FitnessSharingEA implements Runnable {
         }
     }
 
-    public double calculateSharedFitness(Individual i) {
-
-        double fitness = i.getFitness();
-        int denominator = 1;
-
-        int index = population.indexOf(i);
-
-        for (int j = 0; j < population.size(); j++) {
-            double dist = hammingDistance(index, j);
-            if (dist < hd_mating_threshold)
-                denominator += (1 - (dist / hd_mating_threshold));
-        }
-
-        return fitness/denominator;
-    }
-
     private void initialisePopulation() {
         while(population.size() < Parameters.popSize){
             Individual individual = new Individual();
@@ -217,56 +200,4 @@ public class FitnessSharingEA implements Runnable {
 
         }
     }
-
-//    public double convertToRealValue(int[] someSolution){
-//        // map to real  number
-//        double min = 0.0;
-//        double max = 1.0;
-//
-//
-//        String s = convertToString(someSolution);
-//        int newVal = Integer.parseInt(s, 2);
-//
-//        double val = min + (double)newVal*(max-min)/(Math.pow(2.0, (double)length)-1);
-//
-//        return val;
-//    }
-
-    public int hammingDistance(int p1, int p2){
-
-        //merge transition and pacing strategies to create single chromosome
-
-        Individual indivd1 = population.get(p1);
-        Individual indivd2 = population.get(p2);
-
-        int hd = 0;
-
-        for (int i=0;i < indivd1.transitionStrategy.length; i++)
-            if (indivd1.transitionStrategy[i] != indivd2.transitionStrategy[i])
-                hd++;
-
-        return hd;
-    }
-
-//    public double euclideanDistance(Individual p1, Individual p2){
-//
-//        // get real value equivalents of bitstrings
-//        double r1 = convertToRealValue(population[p1]);
-//        double r2 = convertToRealValue(population[p2]);
-//
-//        double distance = Math.sqrt(Math.pow(r1-r2, 2.0));
-//        return distance;
-//    }
-
-    public String convertToString(int[] solution){
-
-        String s ="";
-        for(int i=0;i<Parameters.popSize;i++){
-            int j = solution[i];
-            s= s + Integer.toString(j);
-        }
-
-        return s;
-    }
-
 }

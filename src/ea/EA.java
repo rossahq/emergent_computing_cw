@@ -76,13 +76,10 @@ public class EA implements Runnable{
             return child;
         }
 
-        // choose how many elements to alter
-        int mutationRate = 1 + Parameters.rnd.nextInt(Parameters.mutationRateMax);
-
         // mutate the transition strategy
 
         //mutate the transition strategy by flipping boolean value
-        for(int i = 0; i < mutationRate; i++){
+        for(int i = 0; i < child.transitionStrategy.length; i++){
             int index = Parameters.rnd.nextInt(child.transitionStrategy.length);
             child.transitionStrategy[index] = !child.transitionStrategy[index];
         }
