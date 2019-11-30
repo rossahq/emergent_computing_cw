@@ -21,9 +21,12 @@ public class Parameters {
 	public static double PacingMutationRate = 0.05;
 	public static double crossoverProbability = 1.0;
 	public static double pacingCrossoverProbability = 0.5;
+	public static int hd_mating_threshold = 10;
+	public static double ec_mating_threshold = 0.2;
 
 
 	public static int maxIterations = 1000;
-	
-	
+
+
+	public static int maxRuns = 10;
 }

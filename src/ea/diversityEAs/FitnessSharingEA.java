@@ -16,6 +16,10 @@ package ea.diversityEAs;
  */
 
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.lang.reflect.Parameter;
 import java.util.ArrayList;
 
 import ea.Individual;
@@ -34,6 +38,7 @@ public class FitnessSharingEA implements Runnable {
 
     private ArrayList<Individual> population = new ArrayList<Individual>();
     private int iteration = 0;
+    private int runs = 0;
 
     public FitnessSharingEA() {
 
@@ -50,24 +55,58 @@ public class FitnessSharingEA implements Runnable {
 
         System.out.println("finished init pop");
         iteration = 0;
-        long t= System.currentTimeMillis();
+        runs = 0;
+        while(runs < Parameters.maxRuns) {
+            runs++;
+            iteration = 0;
+            while (iteration < Parameters.maxIterations) {
+                iteration++;
+                Individual parent1 = tournamentSelection();
+                Individual parent2 = tournamentSelection();
 
-        long end = t+ 300000;
+                //stop parents mating if the difference between shared fitness is less than the threshold
+                double size = 0.0;
+                int maxTries = 0;
+                double SFparent1 = calculateSharedFitness(parent1);
+                while (hd_mating_threshold >= size) {
+                    double SFparent2 = calculateSharedFitness(parent2);
+                    double x = SFparent1 - SFparent2;
+                    double y = SFparent2 - SFparent1;
+                    size = Math.abs(x * y);
 
-        while(System.currentTimeMillis() < end)  {
-            iteration++;
-            Individual parent1 = tournamentSelection();
-            Individual parent2 = tournamentSelection();
-            Individual child = crossover(parent1, parent2);
-            child = mutate(child);
-            child.evaluate(teamPursuit);
-            replace(child);
-            printStats();
+                    if (maxTries < 20) {
+                        parent2 = tournamentSelection();
+                    } else {
+                        parent2 = population.get(Parameters.rnd.nextInt(population.size()));
+                    }
+                    maxTries += 1;
+                }
+                Individual child = crossover(parent1, parent2);
+
+                child = mutate(child);
+                child.evaluate(teamPursuit);
+                replace(child);
+                printStats();
+            }
+            Individual best = getBest(population);
+            best.print();
+            try {
+                writeResulstToFile(best.toString());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            Individual worst = getWorst(population);
+            worst.print();
         }
-        Individual best = getBest(population);
-        best.print();
-        Individual worst = getWorst(population);
-        worst.print();
+
+    }
+
+    private void writeResulstToFile(String result) throws IOException {
+        BufferedWriter writer = new BufferedWriter(new FileWriter("C:\\Users\\ROSSA\\IdeaProjects\\emergent_computing_cw\\src\\results\\results", true));
+        writer.append(' ');
+        writer.append(result);
+
+        writer.close();
     }
 
     private void printStats() {
@@ -195,14 +234,13 @@ public class FitnessSharingEA implements Runnable {
     public double calculateSharedFitness(Individual i) {
 
         double fitness = i.getFitness();
-        int denominator = 1;
-
-        int index = population.indexOf(i);
+        double denominator = 1.0;
 
         for (int j = 0; j < population.size(); j++) {
-            double dist = hammingDistance(index, j);
-            if (dist < hd_mating_threshold)
+            double dist = hammingDistance(i, j);
+            if (dist < hd_mating_threshold) {
                 denominator += (1 - (dist / hd_mating_threshold));
+            }
         }
 
         return fitness/denominator;
@@ -232,11 +270,9 @@ public class FitnessSharingEA implements Runnable {
 //        return val;
 //    }
 
-    public int hammingDistance(int p1, int p2){
+    public int hammingDistance(Individual p1, int p2){
 
-        //merge transition and pacing strategies to create single chromosome
-
-        Individual indivd1 = population.get(p1);
+        Individual indivd1 = p1;
         Individual indivd2 = population.get(p2);
 
         int hd = 0;

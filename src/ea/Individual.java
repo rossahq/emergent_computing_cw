@@ -2,6 +2,7 @@ package ea;
 
 import teamPursuit.*;
 
+import java.lang.reflect.Parameter;
 import java.util.ArrayList;
 
 public class Individual {
@@ -18,7 +19,7 @@ public class Individual {
 
 	// this code evolves the transition strategy
 	// an individual is initialised with a random strategy that will evolve
-	// the pacing strategy is initialised with random values between the minimum and max power for cyclists
+	// the pacing strategy is initialised with random values for cyclists
 	
 	public void initialise(){
 		for(int i = 0; i < transitionStrategy.length; i++){
@@ -133,4 +134,30 @@ public class Individual {
 		}
 		System.out.println("\r\n" + this);
 	}
+
+//	public double calculateSharedFitness(Individual individ) {
+//
+//			double fitness = individ.getFitness();
+//			int denominator = 1;
+//
+//			for (int j = 0; j < Parameters.popSize; j++) {
+//				double dist = hammingDistance(individ, j);
+//				if (dist < Parameters.hd_mating_threshold)
+//					denominator += (1 - (dist / Parameters.hd_mating_threshold));
+//			}
+//
+//			return fitness/denominator;
+//	}
+//
+//	public int hammingDistance(Individual p1, Individual p2){
+//
+//		int hd = 0;
+//
+//		for (int i=0;i < p1.transitionStrategy.length; i++)
+//			if (p1.transitionStrategy[i] != p2.transitionStrategy[i])
+//				hd++;
+//
+//		return hd;
+//	}
+
 }
