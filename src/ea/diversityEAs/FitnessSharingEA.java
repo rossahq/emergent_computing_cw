@@ -32,7 +32,7 @@ public class FitnessSharingEA implements Runnable {
     // create a new team
     public static TeamPursuit teamPursuit = new WomensTeamPursuit();
 
-    int hd_mating_threshold = 10;  // use this to set a mating threshold in the genotypic space
+    int hd_mating_threshold = 3;  // use this to set a mating threshold in the genotypic space
     double ec_mating_threshold = 0.2; // use this to set a mating thresholdin the phenotypic space
 
 
