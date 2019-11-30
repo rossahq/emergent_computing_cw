@@ -1,19 +1,9 @@
 package ea;
 
-/*
-Implementation:
 
-Tournament size: 10
-Pop: 100
-Tournament Selection & Tournament Replacement
-Uniform & one-point crossover
-Mutation probability: 0.1
-Mutate rate: 0.05
-Iterations: 1000
-
- */
-
-
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -27,6 +17,7 @@ public class TournamentsEA implements Runnable {
 
 	private ArrayList<Individual> population = new ArrayList<Individual>();
 	private int iteration = 0;
+	private int runs = 0;
 
 	public TournamentsEA() {
 
@@ -40,34 +31,54 @@ public class TournamentsEA implements Runnable {
 	}
 
 	public void run() {
-		initialisePopulation();
-		System.out.println("finished init pop");
-		iteration = 0;
-		while (iteration < Parameters.maxIterations) {
-			iteration++;
-			Individual parent1 = tournamentSelection();
-			Individual parent2 = tournamentSelection();
+		runs = 0;
+		while(runs < Parameters.maxRuns) {
+			initialisePopulation();
+			System.out.println("finished init pop");
+			runs++;
+			iteration = 0;
 
-			if (parent1 == parent2) {
-				System.out.println("Same individ as parent");
+			while (iteration < Parameters.maxIterations) {
+				iteration++;
+				Individual parent1 = tournamentSelection();
+				Individual parent2 = tournamentSelection();
+
+				if (parent1 == parent2) {
+					System.out.println("Same individ as parent");
+				}
+
+				Individual child = crossover(parent1, parent2);
+
+				child = mutate(child);
+
+				child.evaluate(teamPursuit);
+				replace(child);
+				printStats();
+			}
+			Individual best = getBest(population);
+			best.print();
+			try {
+				writeResulstToFile(best.toString());
+			} catch (IOException e) {
+				e.printStackTrace();
 			}
 
-			Individual child = crossover(parent1, parent2);
-
-			child = mutate(child);
-
-			child.evaluate(teamPursuit);
-			replace(child);
-			printStats();
+			Individual worst = getWorst(population);
+			worst.print();
 		}
-		Individual best = getBest(population);
-		best.print();
-		Individual worst = getWorst(population);
-		worst.print();
 	}
 
 	private void printStats() {
 		System.out.println("" + iteration + "\t" + getBest(population) + "\t" + getWorst(population));
+	}
+
+	private void writeResulstToFile(String result) throws IOException {
+		BufferedWriter writer = new BufferedWriter(new FileWriter("C:\\Users\\40204617\\IdeaProjects\\emergent_computing_cw\\src\\results\\results", true));
+		writer.append(' ');
+		writer.append(result);
+		writer.append('\n');
+
+		writer.close();
 	}
 
 	/*//replace worst
@@ -192,6 +203,10 @@ public class TournamentsEA implements Runnable {
 	}
 
 	private void initialisePopulation() {
+		if (population.size() > 0) {
+			population.clear();
+		}
+
 		while(population.size() < Parameters.popSize){
 			Individual individual = new Individual();
 			individual.initialise();

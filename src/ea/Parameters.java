@@ -15,14 +15,12 @@ public class Parameters {
 	
 	
 	public static int popSize = 150;
-	public static int tournamentSize = 10;
+	public static int tournamentSize = 40;
 	
 	public static double mutationProbability = 0.1;
 	public static double PacingMutationRate = 0.05;
 	public static double crossoverProbability = 1.0;
-	public static double pacingCrossoverProbability = 0.5;
-	public static int hd_mating_threshold = 10;
-	public static double ec_mating_threshold = 0.2;
+	public static double pacingCrossoverProbability = 0.5; //for uniform crossover
 
 
 	public static int maxIterations = 1000;
