@@ -2,9 +2,6 @@ package ea;
 
 import teamPursuit.*;
 
-import java.lang.reflect.Parameter;
-import java.util.ArrayList;
-
 public class AdaptiveIndividual {
 
 
@@ -67,7 +64,7 @@ public class AdaptiveIndividual {
         for(int i = 0; i < adptvPacingStrategy.length; i++){
             individual.adptvPacingStrategy.pacingStrategy[i] = adptvPacingStrategy.pacingStrategy[i];
         }
-        individual.evaluate(TournamentsEA.teamPursuit);
+        individual.evaluate(MixedTournamentsEA.teamPursuit);
         return individual;
     }
 
@@ -97,15 +94,14 @@ public class AdaptiveIndividual {
 
     public class AdaptivePacingStrategy {
         int[] pacingStrategy = new int[23];
-        double sigma;
-        int length = 24;
+        double sigma = 1.0;
+        int length = 23;
 
         public AdaptivePacingStrategy() {
 
         }
 
         public void initialise(){
-            sigma = 1.0;
             for(int i = 0; i < pacingStrategy.length; i++){
                 int randomNum = Parameters.rnd.nextInt((700 - 200) + 1) + 200;
                 pacingStrategy[i] = randomNum;
@@ -117,7 +113,7 @@ public class AdaptiveIndividual {
     public class AdaptiveTransitionStrategy {
         boolean[] transitionStrategy = new boolean[22];
         double sigma;
-        int length = 23;
+        int length = 22;
 
         public AdaptiveTransitionStrategy() {
 

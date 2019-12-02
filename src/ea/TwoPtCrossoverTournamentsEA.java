@@ -31,10 +31,10 @@ public class TwoPtCrossoverTournamentsEA implements Runnable {
     }
 
     public void run() {
-        initialisePopulation();
-        System.out.println("finished init pop");
         runs = 0;
         while(runs < Parameters.maxRuns) {
+            initialisePopulation();
+            System.out.println("finished init pop");
             runs++;
             iteration = 0;
 
@@ -69,7 +69,7 @@ public class TwoPtCrossoverTournamentsEA implements Runnable {
     }
 
     private void writeResulstToFile(String result) throws IOException {
-        BufferedWriter writer = new BufferedWriter(new FileWriter("C:\\Users\\40204617\\IdeaProjects\\emergent_computing_cw\\src\\results\\results", true));
+        BufferedWriter writer = new BufferedWriter(new FileWriter("C:\\Users\\ROSSA\\IdeaProjects\\emergent_computing_cw\\src\\results\\results", true));
         writer.append(' ');
         writer.append(result);
         writer.append('\n');
@@ -231,14 +231,17 @@ public class TwoPtCrossoverTournamentsEA implements Runnable {
             System.out.println(individual);
         }
     }
-
     private void initialisePopulation() {
+        if (population.size() > 0) {
+            population.clear();
+        }
+
         while(population.size() < Parameters.popSize){
             Individual individual = new Individual();
             individual.initialise();
             individual.evaluate(teamPursuit);
             population.add(individual);
-        }
 
+        }
     }
 }

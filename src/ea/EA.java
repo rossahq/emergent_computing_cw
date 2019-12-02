@@ -29,7 +29,7 @@ public class EA implements Runnable{
     private int iteration = 0;
 
     public EA() {
-
+        //DEFAULT
     }
 
 

@@ -1,44 +1,40 @@
-package ea.diversityEAs;
+package ea;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import ea.Individual;
-import ea.Parameters;
 import teamPursuit.TeamPursuit;
 import teamPursuit.WomensTeamPursuit;
 
-public class EDFitnessSharingEA implements Runnable {
+public class HDFitnessSharingEA implements Runnable {
 
     // create a new team
     public static TeamPursuit teamPursuit = new WomensTeamPursuit();
 
-    double ec_mating_threshold = 0.2; // sets a mating threshold in the phenotypic space
+    int hd_mating_threshold = 5;  // use this to set a mating threshold in the genotypic space
 
 
     private ArrayList<Individual> population = new ArrayList<Individual>();
     private int iteration = 0;
     private int runs = 0;
 
-    public EDFitnessSharingEA() {
-    //NOT WORKING
+    public HDFitnessSharingEA() {
+
     }
 
 
     public static void main(String[] args) {
-        EDFitnessSharingEA ea = new EDFitnessSharingEA();
+        HDFitnessSharingEA ea = new HDFitnessSharingEA();
         ea.run();
     }
 
     public void run() {
-        initialisePopulation();
-
-        System.out.println("finished init pop");
-        iteration = 0;
         runs = 0;
         while(runs < Parameters.maxRuns) {
+            initialisePopulation();
+            System.out.println("finished init pop");
             runs++;
             iteration = 0;
             while (iteration < Parameters.maxIterations) {
@@ -50,13 +46,13 @@ public class EDFitnessSharingEA implements Runnable {
                 double size = 0.0;
                 int maxTries = 0;
                 double SFparent1 = calculateSharedFitness(parent1);
-                while (ec_mating_threshold >= size) {
+                while (hd_mating_threshold >= size) {
                     double SFparent2 = calculateSharedFitness(parent2);
                     double x = SFparent1 - SFparent2;
                     double y = SFparent2 - SFparent1;
                     size = Math.abs(x * y);
 
-                    if (maxTries < 10) {
+                    if (maxTries < 5) {
                         parent2 = tournamentSelection();
                     } else {
                         parent2 = population.get(Parameters.rnd.nextInt(population.size()));
@@ -87,7 +83,7 @@ public class EDFitnessSharingEA implements Runnable {
         BufferedWriter writer = new BufferedWriter(new FileWriter("C:\\Users\\ROSSA\\IdeaProjects\\emergent_computing_cw\\src\\results\\results", true));
         writer.append(' ');
         writer.append(result);
-
+        writer.append('\n');
         writer.close();
     }
 
@@ -219,9 +215,9 @@ public class EDFitnessSharingEA implements Runnable {
         double denominator = 1.0;
 
         for (int j = 0; j < population.size(); j++) {
-            double dist = euclideanDistance(i, j);
-            if (dist < ec_mating_threshold) {
-                denominator += (1 - (dist / ec_mating_threshold));
+            double dist = hammingDistance(i, j);
+            if (dist < hd_mating_threshold) {
+                denominator += (1 - (dist / hd_mating_threshold));
             }
         }
 
@@ -229,6 +225,10 @@ public class EDFitnessSharingEA implements Runnable {
     }
 
     private void initialisePopulation() {
+        if (population.size() > 0) {
+            population.clear();
+        }
+
         while(population.size() < Parameters.popSize){
             Individual individual = new Individual();
             individual.initialise();
@@ -238,36 +238,53 @@ public class EDFitnessSharingEA implements Runnable {
         }
     }
 
-    public double convertToRealValue(int[] someSolution){
-        // map to real  number
-        double min = 0.0;
-        double max = 1.0;
+//    public double convertToRealValue(int[] someSolution){
+//        // map to real  number
+//        double min = 0.0;
+//        double max = 1.0;
+//
+//
+//        String s = convertToString(someSolution);
+//        int newVal = Integer.parseInt(s, 2);
+//
+//        double val = min + (double)newVal*(max-min)/(Math.pow(2.0, (double)length)-1);
+//
+//        return val;
+//    }
 
-        int length = someSolution.length;
-        int newVal = 0;
-        for (int i = 0; i < length; i++) {
-            newVal += someSolution[i];
+    public int hammingDistance(Individual p1, int p2){
+
+        Individual indivd1 = p1;
+        Individual indivd2 = population.get(p2);
+
+        int hd = 0;
+
+        for (int i=0;i < indivd1.transitionStrategy.length; i++)
+            if (indivd1.transitionStrategy[i] != indivd2.transitionStrategy[i])
+                hd++;
+
+        return hd;
+    }
+
+//    public double euclideanDistance(Individual p1, Individual p2){
+//
+//        // get real value equivalents of bitstrings
+//        double r1 = convertToRealValue(population[p1]);
+//        double r2 = convertToRealValue(population[p2]);
+//
+//        double distance = Math.sqrt(Math.pow(r1-r2, 2.0));
+//        return distance;
+//    }
+
+    public String convertToString(int[] solution){
+
+        String s ="";
+        for(int i=0;i<Parameters.popSize;i++){
+            int j = solution[i];
+            s= s + Integer.toString(j);
         }
 
-
-        double val = min + (double)newVal*(max-min)/(Math.pow(2.0, (double)length)-1);
-
-        System.out.println("SHARED FITNESS "  + val);
-
-        return val;
+        return s;
     }
 
-    public double euclideanDistance(Individual p1, int i){
-
-        Individual parent = p1;
-        Individual indivd = population.get(i);
-
-        // get real value equivalents of bitstrings
-        double r1 = convertToRealValue(parent.pacingStrategy);
-        double r2 = convertToRealValue(parent.pacingStrategy);
-
-
-        double distance = Math.sqrt(Math.pow(r1-r2, 2.0));
-        return distance;
-    }
 }

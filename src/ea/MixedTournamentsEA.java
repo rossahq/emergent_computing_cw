@@ -5,12 +5,11 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 import teamPursuit.TeamPursuit;
 import teamPursuit.WomensTeamPursuit;
 
-public class TournamentsEA implements Runnable {
+public class MixedTournamentsEA implements Runnable {
 
 	// create a new team with the deflault settings
 	public static TeamPursuit teamPursuit = new WomensTeamPursuit();
@@ -19,13 +18,13 @@ public class TournamentsEA implements Runnable {
 	private int iteration = 0;
 	private int runs = 0;
 
-	public TournamentsEA() {
+	public MixedTournamentsEA() {
 
 	}
 
 
 	public static void main(String[] args) {
-		TournamentsEA ea = new TournamentsEA();
+		MixedTournamentsEA ea = new MixedTournamentsEA();
 
 		ea.run();
 	}
@@ -42,10 +41,6 @@ public class TournamentsEA implements Runnable {
 				iteration++;
 				Individual parent1 = tournamentSelection();
 				Individual parent2 = tournamentSelection();
-
-				if (parent1 == parent2) {
-					System.out.println("Same individ as parent");
-				}
 
 				Individual child = crossover(parent1, parent2);
 
@@ -73,7 +68,7 @@ public class TournamentsEA implements Runnable {
 	}
 
 	private void writeResulstToFile(String result) throws IOException {
-		BufferedWriter writer = new BufferedWriter(new FileWriter("C:\\Users\\40204617\\IdeaProjects\\emergent_computing_cw\\src\\results\\results", true));
+		BufferedWriter writer = new BufferedWriter(new FileWriter("C:\\Users\\ROSSA\\IdeaProjects\\emergent_computing_cw\\src\\results\\results", true));
 		writer.append(' ');
 		writer.append(result);
 		writer.append('\n');
@@ -81,16 +76,16 @@ public class TournamentsEA implements Runnable {
 		writer.close();
 	}
 
-	/*//replace worst
+	//replace worst
 	private void replace(Individual child) {
 		Individual worst = getWorst(population);
 		if(child.getFitness() < worst.getFitness()){
 			int idx = population.indexOf(worst);
 			population.set(idx, child);
 		}
-	}*/
+	}
 
-	//tournament replacement
+	/*//tournament replacement
 	private void replace(Individual child) {
 		ArrayList<Individual> candidates = new ArrayList<>();
 		for (int i = 0; i < Parameters.tournamentSize; i++) {
@@ -101,7 +96,7 @@ public class TournamentsEA implements Runnable {
 		//replace loser with the child
 		int idx = population.indexOf(loser);
 		population.set(idx, child);
-	}
+	}*/
 
 	private Individual mutate(Individual child) {
 

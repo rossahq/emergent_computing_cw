@@ -14,6 +14,10 @@ Iterations: 1000
  */
 
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.lang.reflect.Parameter;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -27,6 +31,7 @@ public class AdaptiveEA implements Runnable {
 
     private ArrayList<AdaptiveIndividual> population = new ArrayList<AdaptiveIndividual>();
     private int iteration = 0;
+    private double pacingTau;
 
     public AdaptiveEA() {
 
@@ -40,34 +45,52 @@ public class AdaptiveEA implements Runnable {
     }
 
     public void run() {
-        initialisePopulation();
-        System.out.println("finished init pop");
-        iteration = 0;
-        while (iteration < Parameters.maxIterations) {
-            iteration++;
-            AdaptiveIndividual parent1 = tournamentSelection();
-            AdaptiveIndividual parent2 = tournamentSelection();
+        int runs = 0;
+        while(runs < Parameters.maxRuns) {
+            initialisePopulation();
+            System.out.println("finished init pop");
+            runs++;
+            iteration = 0;
+            // set initial values for tau parameter
+            pacingTau = 1.0/Math.sqrt(population.get(1).adptvPacingStrategy.length);
 
-            if (parent1 == parent2) {
-                System.out.println("Same individ as parent");
+            while (iteration < Parameters.maxIterations) {
+                iteration++;
+                AdaptiveIndividual parent1 = tournamentSelection();
+                AdaptiveIndividual parent2 = tournamentSelection();
+
+                AdaptiveIndividual child = crossover(parent1, parent2);
+
+                child = mutate(child);
+
+                child.evaluate(teamPursuit);
+                replace(child);
+                printStats();
+            }
+            AdaptiveIndividual best = getBest(population);
+            best.print();
+            try {
+                writeResulstToFile(best.toString());
+            } catch (IOException e) {
+                e.printStackTrace();
             }
 
-            AdaptiveIndividual child = crossover(parent1, parent2);
-
-            child = mutate(child);
-
-            child.evaluate(teamPursuit);
-            replace(child);
-            printStats();
+            AdaptiveIndividual worst = getWorst(population);
+            worst.print();
         }
-        AdaptiveIndividual best = getBest(population);
-        best.print();
-        AdaptiveIndividual worst = getWorst(population);
-        worst.print();
     }
 
     private void printStats() {
         System.out.println("" + iteration + "\t" + getBest(population) + "\t" + getWorst(population));
+    }
+
+    private void writeResulstToFile(String result) throws IOException {
+        BufferedWriter writer = new BufferedWriter(new FileWriter("C:\\Users\\ROSSA\\IdeaProjects\\emergent_computing_cw\\src\\results\\results", true));
+        writer.append(' ');
+        writer.append(result);
+        writer.append('\n');
+
+        writer.close();
     }
 
     //tournament replacement
@@ -84,6 +107,10 @@ public class AdaptiveEA implements Runnable {
     }
 
     private AdaptiveIndividual mutate(AdaptiveIndividual child) {
+        double pacingSigma = child.adptvPacingStrategy.sigma;
+        double transSigma = child.adptvTransitionStrategy.sigma;
+        // modify sigma value stored in the chromosome   s = s.e^(t.N(0,1))
+        child.adptvPacingStrategy.sigma = pacingSigma*Math.exp(pacingTau*Parameters.rnd.nextGaussian());
 
         //mutate the transition strategy by flipping boolean value
         for (int i = 0; i < child.adptvTransitionStrategy.length; i++) {
@@ -96,7 +123,7 @@ public class AdaptiveEA implements Runnable {
         //mutate the pacing strategy by changing the int value
         for (int i = 0; i < child.adptvPacingStrategy.length; ++i) {
             if (Parameters.rnd.nextDouble() < Parameters.mutationProbability) {
-                int mutateAmount = (int) (child.adptvPacingStrategy.pacingStrategy[i] * Parameters.PacingMutationRate);
+                int mutateAmount = (int) (pacingSigma * Parameters.rnd.nextGaussian());
                 if (Parameters.rnd.nextBoolean()) {
                     child.adptvPacingStrategy.pacingStrategy[i] += mutateAmount;
                     if (child.adptvPacingStrategy.pacingStrategy[i] > 1200) {
@@ -110,6 +137,9 @@ public class AdaptiveEA implements Runnable {
                 }
             }
         }
+        //lastly mutate the sigma value
+        double mutateAmount = pacingSigma * Parameters.rnd.nextGaussian();
+        child.adptvPacingStrategy.sigma = child.adptvPacingStrategy.sigma + mutateAmount;
 
         return child;
     }
@@ -136,6 +166,13 @@ public class AdaptiveEA implements Runnable {
         for(int i = crossoverPoint; i < parent2.adptvTransitionStrategy.transitionStrategy.length; i++){
             child.adptvTransitionStrategy.transitionStrategy[i] = parent2.adptvTransitionStrategy.transitionStrategy[i];
         }
+
+        if (Parameters.rnd.nextFloat() > Parameters.pacingCrossoverProbability) {
+            child.adptvPacingStrategy.sigma = parent1.adptvPacingStrategy.sigma;
+        } else {
+            child.adptvPacingStrategy.sigma = parent2.adptvPacingStrategy.sigma;
+        }
+
         return child;
     }
 
@@ -183,6 +220,10 @@ public class AdaptiveEA implements Runnable {
     }
 
     private void initialisePopulation() {
+        if (population.size() > 0) {
+            population.clear();
+        }
+
         while(population.size() < Parameters.popSize){
             AdaptiveIndividual individual = new AdaptiveIndividual();
             individual.initialise();

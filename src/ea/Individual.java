@@ -2,7 +2,6 @@ package ea;
 
 import teamPursuit.*;
 
-import java.lang.reflect.Parameter;
 import java.util.ArrayList;
 
 public class Individual {
@@ -107,7 +106,7 @@ public class Individual {
 		for(int i = 0; i < pacingStrategy.length; i++){
 			individual.pacingStrategy[i] = pacingStrategy[i];
 		}		
-		individual.evaluate(TournamentsEA.teamPursuit);
+		individual.evaluate(MixedTournamentsEA.teamPursuit);
 		return individual;
 	}
 	

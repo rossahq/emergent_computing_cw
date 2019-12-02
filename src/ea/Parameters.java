@@ -15,7 +15,7 @@ public class Parameters {
 	
 	
 	public static int popSize = 150;
-	public static int tournamentSize = 50;
+	public static int tournamentSize = 20;
 	
 	public static double mutationProbability = 0.1;
 	public static double PacingMutationRate = 0.05;
